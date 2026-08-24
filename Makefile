@@ -8,7 +8,7 @@ huncolor: huncolor.o
 huncolor.o: huncolor.c
 
 install: huncolor
-	install huncolor $(HOME)/bin
+	install -m 755 huncolor $(HOME)/bin/huncolor
 
 clear: huncolor
 	rm -rf huncolor *.o
