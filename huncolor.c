@@ -12,6 +12,8 @@ const char *dic_path = "/usr/share/hunspell/en_US.dic";
 
 #define START "\033[1;31m" // RED ANSI CODE
 #define STOP "\033[0m"
+#define UNDER_ON "\033[4m" // ENABLE UNDERLINING ANSI CODE
+
 
 #define SMALLBUF 80
 
@@ -30,6 +32,7 @@ struct state {
 	char word[SMALLBUF];
 	int resetlen;
 	char reset[SMALLBUF];
+	int underline;
 };
 
 static int check_word(struct state *st)
@@ -48,10 +51,22 @@ static void check_and_print(struct state *st)
 		return;
 	}
 
-	write(1, START, strlen(START));
-	write(1, st->word, st->wordlen);
-	write(1, STOP, strlen(STOP));
-	write(1, st->reset, st->resetlen);
+	// write(1, START, strlen(START));
+	// write(1, st->word, st->wordlen);
+	// write(1, STOP, strlen(STOP));
+	// write(1, st->reset, st->resetlen);
+
+	if (st->underline) {
+		write(1, UNDER_ON, strlen(UNDER_ON));
+		write(1, st->word, st->wordlen);
+		write(1, STOP, strlen(STOP));
+		write(1, st->reset, st->resetlen);
+	} else {
+		write(1, START, strlen(START));
+		write(1, st->word, st->wordlen);
+		write(1, STOP, strlen(STOP));
+		write(1, st->reset, st->resetlen);
+	}
 }
 
 static void handle_escape(struct state *st, char c)
@@ -186,18 +201,24 @@ int main(int argc, char **argv)
 	char buf[BUFSIZE];
 	const char *custom_dic = NULL;
 	const char *input_file = NULL;
+	int underline = 0;
 	
 
 	// Parse command line options
 	for (int i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
-			printf("Usage: %s [-d custom.dic] [FILE]\n", argv[0]);
+			printf("Usage: %s [-d custom.dic] [-u] [FILE]\n", argv[0]);
 			return 0;
 		}
 		if ((strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "--dict") == 0) && i + 1 < argc) {
 			custom_dic = argv[++i];
 		} else if (argv[i][0] != '-') {
 			input_file = argv[i];
+		} else if (strcmp(argv[i], "-u") == 0 || strcmp(argv[i], "--underline") == 0) {
+			underline = 1;
+		} else {
+			fprintf(stderr, "Unknown option: %s\n", argv[i]);
+			return 1;
 		}
 	}
 
@@ -245,6 +266,7 @@ int main(int argc, char **argv)
 		.state = Newline,
 		.resetlen = strlen(STOP),
 		.reset = STOP,
+		.underline = underline,
 	};
 
 	for (;;) {
