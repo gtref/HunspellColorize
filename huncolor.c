@@ -234,7 +234,7 @@ int main(int argc, char **argv)
 		dup2(fd[0], 0);
 		close(fd[0]);
 		close(fd[1]);
-		exec_less(argv);
+		exec_less();
 	}
 	dup2(fd[1], 1);
 	close(fd[0]);
