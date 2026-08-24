@@ -35,7 +35,44 @@ struct state {
 	int underline;
 	int ignore_count;
 	const char *ignore_words[MAX_IGNORE];
+	int line_count;
+    int column_count;
+	int count_lines;
+	int count_columns;
+	int max_columns;
 };
+
+static void print_counts(struct state *st)
+{
+    if (st->count_lines)
+        fprintf(stderr, "Lines: %d\n", st->line_count);
+
+    if (st->count_columns) {
+        int columns = st->max_columns;
+
+        /*
+         * Handle a file that doesn't end with a newline.
+         */
+        if (st->column_count - 1 > columns)
+            columns = st->column_count - 1;
+
+        fprintf(stderr, "Columns: %d\n", columns);
+    }
+}
+
+static void count_position(struct state *st, unsigned char c)
+{
+    if (c == '\n') {
+        st->line_count++;
+
+        if (st->column_count - 1 > st->max_columns)
+            st->max_columns = st->column_count - 1;
+
+        st->column_count = 1;
+    } else {
+        st->column_count++;
+    }
+}
 
 static int is_ignored(struct state *st) {
 	for (int i = 0; i < st->ignore_count; i++) {
@@ -107,6 +144,11 @@ static void process(struct state *st, const char *buf, size_t len)
 
 	for ( ; len > 0 ; len--, buf++) {
 		unsigned char c = *buf;
+
+		if (st->count_lines || st->count_columns)
+        	count_position(st, c);
+
+
 		switch (c) {
 		case 128 ... 255:
 		case 'A' ... 'Z':
@@ -218,6 +260,8 @@ int main(int argc, char **argv)
 	const char *custom_dic = NULL;
 	const char *input_file = NULL;
 	int underline = 0;
+	int count_lines_flag = 0;
+	int count_columns_flag = 0;
 	const char *ignore_words[MAX_IGNORE];
 	int ignore_count = 0;
 	
@@ -234,6 +278,10 @@ int main(int argc, char **argv)
 			input_file = argv[i];
 		} else if (strcmp(argv[i], "-u") == 0 || strcmp(argv[i], "--underline") == 0) {
 			underline = 1;
+		} else if (strcmp(argv[i], "-l") == 0 || strcmp(argv[i], "--count-lines") == 0) {
+			count_lines_flag = 1;
+		} else if (strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--count-columns") == 0) {
+			count_columns_flag = 1;
 		} else if (strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--ignore") == 0) {
     		if (i + 1 >= argc) {
             	fprintf(stderr, "%s requires a word\n", argv[i]);
@@ -299,6 +347,12 @@ int main(int argc, char **argv)
 		.reset = STOP,
 		.underline = underline,
 		.ignore_count = ignore_count,
+		.line_count = 0,
+    	.column_count = 1,
+
+    	.count_lines = count_lines_flag,
+    	.count_columns = count_columns_flag,
+		.max_columns = 0,
 	};
 
 	for (int i = 0; i < ignore_count; i++) {
@@ -319,6 +373,8 @@ int main(int argc, char **argv)
 	// the next iteration. Deal with that here.
 	if (state.state == Word)
 		check_and_print(&state);
+
+	print_counts(&state);
 
 	Hunspell_destroy(hunhandle);
 
