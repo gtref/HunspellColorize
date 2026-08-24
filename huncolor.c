@@ -184,6 +184,8 @@ int main(int argc, char **argv)
 	int fd[2];
 	char buf[BUFSIZE];
 
+	setenv("LESS", "-FRX", 0);
+
 	if (isatty(0))
 		exec_less(argv);
 
