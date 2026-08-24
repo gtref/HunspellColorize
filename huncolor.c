@@ -163,9 +163,10 @@ static void process(struct state *st, const char *buf, size_t len)
 		write(1, last, buf-last);
 }
 
-static void exec_less(char **argv)
+static void exec_less(void)
 {
-	execvp("less", argv);
+	char *less_args[] = { "less", NULL };
+	execvp("less", less_args);
 	perror("Couldn't exec 'less'");
 	exit(1);
 }
@@ -210,12 +211,12 @@ int main(int argc, char **argv)
 	}
 
 	if (isatty(0))
-		exec_less(argv);
+		exec_less();
 
 	Hunhandle *hunhandle = Hunspell_create(aff_path, dic_path);
 
 	if (!hunhandle || pipe(fd))
-		exec_less(argv);
+		exec_less();
 
 	// Add local dictionaries from cwd and $HOME
 	local_dictionary(hunhandle, ".dictionary");
