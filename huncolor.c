@@ -11,7 +11,7 @@ const char *aff_path = "/usr/share/hunspell/en_US.aff";
 const char *dic_path = "/usr/share/hunspell/en_US.dic";
 
 #define START "\033[1;31m"
-#define STOP "\033[22m"
+#define STOP "\033[0m"
 
 #define SMALLBUF 80
 
