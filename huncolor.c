@@ -10,7 +10,7 @@
 const char *aff_path = "/usr/share/hunspell/en_US.aff";
 const char *dic_path = "/usr/share/hunspell/en_US.dic";
 
-#define START "\033[1m"
+#define START "\033[1;31m"
 #define STOP "\033[22m"
 
 #define SMALLBUF 80
@@ -183,6 +183,11 @@ int main(int argc, char **argv)
 {
 	int fd[2];
 	char buf[BUFSIZE];
+
+	if (argc > 1 && (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0)) {
+    printf("Usage: %s [FILE] or pipe text into stdin\n", argv[0]);
+    return 0;
+    }
 
 	setenv("LESS", "-FRX", 0);
 
