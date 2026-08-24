@@ -13,6 +13,7 @@ const char *dic_path = "/usr/share/hunspell/en_US.dic";
 #define START "\033[1;31m" // RED ANSI CODE
 #define STOP "\033[0m"
 #define UNDER_ON "\033[4m" // ENABLE UNDERLINING ANSI CODE
+#define BOLD_ON "\033[1;36m" // ENABLE BOLD & CYAN ANSI CODE
 
 #define MAX_IGNORE 128
 #define SMALLBUF 80
@@ -33,6 +34,7 @@ struct state {
 	int resetlen;
 	char reset[SMALLBUF];
 	int underline;
+	int bold;
 	int ignore_count;
 	const char *ignore_words[MAX_IGNORE];
 	int line_count;
@@ -111,6 +113,11 @@ static void check_and_print(struct state *st)
 
 	if (st->underline) {
 		write(1, UNDER_ON, strlen(UNDER_ON));
+		write(1, st->word, st->wordlen);
+		write(1, STOP, strlen(STOP));
+		write(1, st->reset, st->resetlen);
+	} else if (st->bold) {
+		write(1, BOLD_ON, strlen(BOLD_ON));
 		write(1, st->word, st->wordlen);
 		write(1, STOP, strlen(STOP));
 		write(1, st->reset, st->resetlen);
@@ -260,6 +267,7 @@ int main(int argc, char **argv)
 	const char *custom_dic = NULL;
 	const char *input_file = NULL;
 	int underline = 0;
+	int bold = 0;
 	int count_lines_flag = 0;
 	int count_columns_flag = 0;
 	const char *ignore_words[MAX_IGNORE];
@@ -269,7 +277,7 @@ int main(int argc, char **argv)
 	// Parse command line options
 	for (int i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
-			printf("Usage: %s [-d custom.dic] [-u] [-i WORD] [FILE]\n", argv[0]);
+			printf("Usage: %s [-d custom.dic] [-u] [-b] [-i WORD] [FILE]\n", argv[0]);
 			return 0;
 		}
 		if ((strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "--dict") == 0) && i + 1 < argc) {
@@ -278,6 +286,14 @@ int main(int argc, char **argv)
 			input_file = argv[i];
 		} else if (strcmp(argv[i], "-u") == 0 || strcmp(argv[i], "--underline") == 0) {
 			underline = 1;
+		} else if (strcmp(argv[i], "-b") == 0 || strcmp(argv[i], "--bold") == 0) {
+			underline = 0;
+			bold = 1;
+			// Set a flag to enable bold formatting
+			// This will be handled in the check_and_print function
+			// where we can add a condition to check for this flag
+			// and apply bold formatting instead of underline.
+			// For now, we just set underline to 0 to disable it.
 		} else if (strcmp(argv[i], "-l") == 0 || strcmp(argv[i], "--count-lines") == 0) {
 			count_lines_flag = 1;
 		} else if (strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--count-columns") == 0) {
@@ -346,6 +362,7 @@ int main(int argc, char **argv)
 		.resetlen = strlen(STOP),
 		.reset = STOP,
 		.underline = underline,
+		.bold = bold,
 		.ignore_count = ignore_count,
 		.line_count = 0,
     	.column_count = 1,
