@@ -183,8 +183,8 @@ int main(int argc, char **argv)
 {
 	int fd[2];
 	char buf[BUFSIZE];
-	const char *custom_dict = NULL;
-	const char *input_file == NULL;
+	const char *custom_dic = NULL;
+	const char *input_file = NULL;
 	
 
 	// Parse command line options
