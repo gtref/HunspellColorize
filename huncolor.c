@@ -10,7 +10,7 @@
 const char *aff_path = "/usr/share/hunspell/en_US.aff";
 const char *dic_path = "/usr/share/hunspell/en_US.dic";
 
-#define START "\033[1;31m"
+#define START "\033[1;31m" // RED ANSI CODE
 #define STOP "\033[0m"
 
 #define SMALLBUF 80
@@ -183,13 +183,31 @@ int main(int argc, char **argv)
 {
 	int fd[2];
 	char buf[BUFSIZE];
+	const char *custom_dict = NULL;
+	const char *input_file == NULL;
+	
 
-	if (argc > 1 && (strcmp(argv[1], "--help") == 0 || strcmp(argv[1], "-h") == 0)) {
-    printf("Usage: %s [FILE] or pipe text into stdin\n", argv[0]);
-    return 0;
-    }
+	// Parse command line options
+	for (int i = 1; i < argc; i++) {
+		if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
+			printf("Usage: %s [-d custom.dic] [FILE]\n", argv[0]);
+			return 0;
+		}
+		if ((strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "--dict") == 0) && i + 1 < argc) {
+			custom_dic = argv[++i];
+		} else if (argv[i][0] != '-') {
+			input_file = argv[i];
+		}
+	}
 
 	setenv("LESS", "-FRX", 0);
+
+	if (input_file) {
+		if (!freopen(input_file, "r", stdin)) {
+			perror(input_file);
+			return 1;
+		}
+	}
 
 	if (isatty(0))
 		exec_less(argv);
@@ -205,6 +223,10 @@ int main(int argc, char **argv)
 	if (home) {
 		snprintf(buf, BUFSIZE, "%s/.dictionary", home);
 		local_dictionary(hunhandle, buf);
+	}
+	// Load custom dictionary passed via -d
+	if (custom_dic) {
+		local_dictionary(hunhandle, custom_dic);
 	}
 
 	if (fork()) {
