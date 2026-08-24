@@ -14,7 +14,7 @@ const char *dic_path = "/usr/share/hunspell/en_US.dic";
 #define STOP "\033[0m"
 #define UNDER_ON "\033[4m" // ENABLE UNDERLINING ANSI CODE
 
-
+#define MAX_IGNORE 128
 #define SMALLBUF 80
 
 struct state {
@@ -33,15 +33,31 @@ struct state {
 	int resetlen;
 	char reset[SMALLBUF];
 	int underline;
+	int ignore_count;
+	const char *ignore_words[MAX_IGNORE];
 };
+
+static int is_ignored(struct state *st) {
+	for (int i = 0; i < st->ignore_count; i++) {
+		if (strcmp(st->word, st->ignore_words[i]) == 0) {
+			return 1;
+		}
+	}
+	return 0;
+}
 
 static int check_word(struct state *st)
 {
-	// We're not doing German of Finnish...
-	if (st->wordlen == SMALLBUF)
-		return 1;
-	st->word[st->wordlen] = 0;
-	return Hunspell_spell(st->hunhandle, st->word);
+    /* We're not doing German or Finnish... */
+    if (st->wordlen == SMALLBUF)
+        return 1;
+
+    st->word[st->wordlen] = '\0';
+
+    if (is_ignored(st))
+        return 1;
+
+    return Hunspell_spell(st->hunhandle, st->word);
 }
 
 static void check_and_print(struct state *st)
@@ -202,12 +218,14 @@ int main(int argc, char **argv)
 	const char *custom_dic = NULL;
 	const char *input_file = NULL;
 	int underline = 0;
+	const char *ignore_words[MAX_IGNORE];
+	int ignore_count = 0;
 	
 
 	// Parse command line options
 	for (int i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
-			printf("Usage: %s [-d custom.dic] [-u] [FILE]\n", argv[0]);
+			printf("Usage: %s [-d custom.dic] [-u] [-i WORD] [FILE]\n", argv[0]);
 			return 0;
 		}
 		if ((strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "--dict") == 0) && i + 1 < argc) {
@@ -216,6 +234,19 @@ int main(int argc, char **argv)
 			input_file = argv[i];
 		} else if (strcmp(argv[i], "-u") == 0 || strcmp(argv[i], "--underline") == 0) {
 			underline = 1;
+		} else if (strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--ignore") == 0) {
+    		if (i + 1 >= argc) {
+            	fprintf(stderr, "%s requires a word\n", argv[i]);
+            	return 1;
+        	}
+
+        	if (ignore_count >= MAX_IGNORE) {
+            	fprintf(stderr, "Too many ignored words (max %d)\n", MAX_IGNORE);
+            	return 1;
+        	}
+
+        	ignore_words[ignore_count++] = argv[++i];
+
 		} else {
 			fprintf(stderr, "Unknown option: %s\n", argv[i]);
 			return 1;
@@ -267,7 +298,13 @@ int main(int argc, char **argv)
 		.resetlen = strlen(STOP),
 		.reset = STOP,
 		.underline = underline,
+		.ignore_count = ignore_count,
 	};
+
+	for (int i = 0; i < ignore_count; i++) {
+    	state.ignore_words[i] = ignore_words[i];
+	}
+	
 
 	for (;;) {
 		ssize_t len = read(0, buf, sizeof(buf));
