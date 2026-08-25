@@ -24,5 +24,5 @@ ___
 
 # Whats NEW!!??
 
-Please checkout (CHANGES.md)[CHANGES.md] For what has changed from the origional source.
+Please checkout [CHANGES.md](CHANGES.md) For what has changed from the origional source.
 
