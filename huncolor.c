@@ -279,7 +279,37 @@ int main(int argc, char **argv)
 	// Parse command line options
 	for (int i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
-			printf("Usage: %s [-h] [-v] [-d custom.dic] { -u -b} [-i WORD] [FILE]\n", argv[0]);
+			printf(
+					"Usage: %s [OPTIONS] [FILE]\n"
+					"\n"
+					"Spell-check and highlight words in a text file or standard input.\n"
+					"\n"
+					"Options:\n"
+					"  -h, --help              Show this help message\n"
+					"  -v, --version           Show version information\n"
+					"  -d, --dict FILE         Load an additional dictionary\n"
+					"  -u, --underline         Underline misspelled words\n"
+					"  -b, --bold              Bold misspelled words\n"
+					"  -i, --ignore WORD       Ignore a word\n"
+					"  -l, --count-lines       Count lines in the input\n"
+					"  -c, --count-columns     Count the maximum columns\n"
+					"\n"
+					"Input:\n"
+					"  FILE                    Read from FILE\n"
+					"  -                       Read from standard input\n"
+					"\n"
+					"Examples:\n"
+					"  %s README.md\n"
+					"  %s -u README.md\n"
+					"  %s -i foo -i bar source.c\n"
+					"  cat README.md | %s\n"
+					"\n",
+					argv[0],
+					argv[0],
+					argv[0],
+					argv[0],
+					argv[0]
+				);
 			return 0;
 		}
 		if ((strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "--dict") == 0) && i + 1 < argc) {
