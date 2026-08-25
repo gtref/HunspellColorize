@@ -20,3 +20,9 @@ And no, this does no context-aware coloring at all.  Pathnames, URLs,
 this silly thing doesn't recognize any of that, just looks at things
 that might be words.  In US ASCII only. What a crock.
 
+___
+
+# Whats NEW!!??
+
+Please checkout (CHANGES.md)[CHANGES.md] For what has changed from the origional source.
+

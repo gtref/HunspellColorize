@@ -12,3 +12,11 @@ ___
 
 - ### Adding less cli flags automatically
    - using setenv to add flags to less on run.
+
+- ### More CLI flags
+   - Adding -i flag to ignore characters.
+   - Adding -b flag for styling output.
+   - Adding -u flag to underline mistakes.
+   - Adding -l flag for line counting.
+   - Adding -c flag for collum counting.
+   - Adding -d flag for adding custom dictionarys.
