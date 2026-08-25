@@ -18,6 +18,8 @@ const char *dic_path = "/usr/share/hunspell/en_US.dic";
 #define MAX_IGNORE 128
 #define SMALLBUF 80
 
+#define HunColor_Version "0.2.0"
+
 struct state {
 	Hunhandle *hunhandle;
 	enum {
@@ -260,7 +262,7 @@ static void local_dictionary(Hunhandle *handle, const char *filename)
 
 #define BUFSIZE 1024
 
-int main(int argc, char **argv)
+int main(int argc, char **argv) 
 {
 	int fd[2];
 	char buf[BUFSIZE];
@@ -277,11 +279,14 @@ int main(int argc, char **argv)
 	// Parse command line options
 	for (int i = 1; i < argc; i++) {
 		if (strcmp(argv[i], "--help") == 0 || strcmp(argv[i], "-h") == 0) {
-			printf("Usage: %s [-d custom.dic] [-u] [-b] [-i WORD] [FILE]\n", argv[0]);
+			printf("Usage: %s [-h] [-v] [-d custom.dic] { -u -b} [-i WORD] [FILE]\n", argv[0]);
 			return 0;
 		}
 		if ((strcmp(argv[i], "-d") == 0 || strcmp(argv[i], "--dict") == 0) && i + 1 < argc) {
 			custom_dic = argv[++i];
+		} else if (strcmp(argv[i], "-v") == 0 || strcmp(argv[i], "--version") == 0) {
+			printf("%s version %s\n", argv[0], HunColor_Version);
+			return 0;
 		} else if (argv[i][0] != '-') {
 			input_file = argv[i];
 		} else if (strcmp(argv[i], "-u") == 0 || strcmp(argv[i], "--underline") == 0) {
