@@ -20,3 +20,7 @@ ___
    - Adding -l flag for line counting.
    - Adding -c flag for collum counting.
    - Adding -d flag for adding custom dictionarys.
+
+- ### Improved parsing
+   - The parser now sees words like "google-fu" as a word google-fu so can now be ignored.
+   - Added parser.c and parser.h that contain all sorts of usefull functions for parsing text.
