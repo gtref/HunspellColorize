@@ -4,6 +4,7 @@
 #include <string.h>
 #include <ctype.h>
 #include <sys/stat.h>
+#include "parser.h"
 
 #include <hunspell.h>
 
@@ -207,7 +208,28 @@ static void process(struct state *st, const char *buf, size_t len)
 				st->state = NotAWord;
 				continue;
 			}
+		
+		case '-':
+			if (st->state == Word && parser_can_continue_hyphen(buf, len)) {
+				st->word[st->wordlen++] = c;
+				continue;
+			}
+			// Special case: if we are in a word and the next character is a letter, we can continue the word
+			switch (st->state) {
 
+				case Word:
+					check_and_print(st);
+					last = buf;
+					break;
+				
+				default:
+					break;
+			}
+
+			st->state = NotAWord;
+			continue;
+
+			
 		// Special case
 		case '\'':
 			if (st->state == Word && len > 1 && isalpha(buf[1]) && st->wordlen < SMALLBUF) {
