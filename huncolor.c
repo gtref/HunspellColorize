@@ -44,6 +44,7 @@ struct state {
 	int count_lines;
 	int count_columns;
 	int max_columns;
+	int nocolor;
 };
 
 static void print_counts(struct state *st)
@@ -123,6 +124,8 @@ static void check_and_print(struct state *st)
 		write(1, st->word, st->wordlen);
 		write(1, STOP, strlen(STOP));
 		write(1, st->reset, st->resetlen);
+	} else if (st->nocolor) {
+		write(1, st->word, st->wordlen);
 	} else {
 		write(1, START, strlen(START));
 		write(1, st->word, st->wordlen);
@@ -274,6 +277,7 @@ int main(int argc, char **argv)
 	int count_columns_flag = 0;
 	const char *ignore_words[MAX_IGNORE];
 	int ignore_count = 0;
+	int no_color = 0;
 	
 
 	// Parse command line options
@@ -293,6 +297,7 @@ int main(int argc, char **argv)
 					"  -i, --ignore WORD       Ignore a word\n"
 					"  -l, --count-lines       Count lines in the input\n"
 					"  -c, --count-columns     Count the maximum columns\n"
+					"  -n, --no-color          Disable color output\n"
 					"\n"
 					"Input:\n"
 					"  FILE                    Read from FILE\n"
@@ -333,6 +338,8 @@ int main(int argc, char **argv)
 			count_lines_flag = 1;
 		} else if (strcmp(argv[i], "-c") == 0 || strcmp(argv[i], "--count-columns") == 0) {
 			count_columns_flag = 1;
+		} else if (strcmp(argv[i], "-n") == 0 || strcmp(argv[i], "--no-color") == 0) {
+    		no_color = 1;
 		} else if (strcmp(argv[i], "-i") == 0 || strcmp(argv[i], "--ignore") == 0) {
     		if (i + 1 >= argc) {
             	fprintf(stderr, "%s requires a word\n", argv[i]);
@@ -405,6 +412,7 @@ int main(int argc, char **argv)
     	.count_lines = count_lines_flag,
     	.count_columns = count_columns_flag,
 		.max_columns = 0,
+		.nocolor = no_color,
 	};
 
 	for (int i = 0; i < ignore_count; i++) {
